@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PORSENIJAR 2026 | PGRI Kabupaten Sampang</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#07111f; --panel:#0c1a2d; --panel2:#10223a; --line:#203653;
+      --text:#f4f7fb; --muted:#91a5bf; --gold:#f5c451; --blue:#2f7de1;
+      --green:#25c58a; --red:#f15b68; --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at 50% -20%,#17365a 0,transparent 52%),var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;font-size:14px;min-height:100vh}
+    .shell{max-width:1440px;margin:0 auto;padding:26px 24px 22px}
+    .hero{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:28px 30px;border:1px solid #294364;border-radius:24px;background:linear-gradient(120deg,rgba(18,42,70,.98),rgba(10,25,44,.98));box-shadow:0 18px 50px #0003}
+    .hero:after{content:"";position:absolute;width:300px;height:300px;border:1px solid #31527455;border-radius:50%;right:5%;top:-190px;box-shadow:0 0 0 35px #31527414,0 0 0 70px #3152740b;pointer-events:none}
+    .brand{display:flex;gap:18px;align-items:center;min-width:0;z-index:1}
+    .brand-icon{width:66px;height:66px;flex:0 0 66px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(145deg,#f6d36b,#e6a927);color:#17243a;font-size:30px;box-shadow:0 8px 25px #f5c45120}
+    .eyebrow{color:#a8bfd9;font-size:11px;font-weight:800;letter-spacing:2.4px;text-transform:uppercase;margin-bottom:7px}
+    h1{font-size:clamp(28px,4vw,42px);line-height:1.05;margin:0 0 9px;font-weight:900;letter-spacing:-1.5px}
+    .subtitle{color:#c6d5e7;font-size:13px;font-weight:700;letter-spacing:1.5px}
+    .hero-right{z-index:1;text-align:right;min-width:205px}
+    .live-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#4c1823;border:1px solid #923747;color:#ff9da6;font-weight:800;font-size:10px;letter-spacing:.8px}
+    .live-dot{height:7px;width:7px;background:#ff6877;border-radius:50%;box-shadow:0 0 0 4px #ff68771c}
+    .sync-time{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.6}
+    .sync-time strong{display:block;color:#e0e9f5;font-size:12px;font-weight:700}
+    .section-label{display:flex;align-items:center;gap:10px;margin:28px 0 14px;font-size:12px;font-weight:800;letter-spacing:1.2px;color:#c4d5e9;text-transform:uppercase}
+    .section-label:before{content:"";height:19px;width:4px;border-radius:5px;background:var(--gold)}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .stat{position:relative;min-height:112px;padding:18px 18px 16px;background:linear-gradient(145deg,#10223a,#0b192b);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    .stat:after{content:"";position:absolute;right:-22px;bottom:-35px;width:90px;height:90px;border:1px solid #2e4c6d55;border-radius:50%}
+    .stat-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#a9bdd3;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;line-height:1.4;min-height:28px}
+    .stat-icon{font-size:18px;opacity:.9}
+    .stat-number{font-size:34px;line-height:1;margin-top:12px;font-weight:900;color:var(--gold);letter-spacing:-1px}
+    .filters{padding:21px;background:linear-gradient(145deg,#0d1d31,#0a1728);border:1px solid var(--line);border-radius:var(--radius)}
+    .filter-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+    .filter-title{font-size:16px;font-weight:800;margin:0 0 6px}
+    .filter-desc{font-size:12px;color:var(--muted);line-height:1.6}
+    .filter-grid{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:13px;align-items:end}
+    label{display:block;font-size:11px;color:#b5c6da;font-weight:700;margin-bottom:8px}
+    select,input{width:100%;min-height:43px;background:#071426;color:#edf4fc;border:1px solid #29415e;border-radius:10px;padding:0 12px;font:inherit;outline:none}
+    select:focus,input:focus{border-color:#5898ed;box-shadow:0 0 0 3px #3988e41a}
+    option{background:#0c1a2d}
+    .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+    button{border:0;border-radius:10px;min-height:41px;padding:0 15px;font:700 12px Inter,Arial,sans-serif;cursor:pointer;transition:transform .15s,filter .15s}
+    button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn-primary{background:#2679dc;color:white}.btn-secondary{background:#1a2c43;color:#d6e2f0;border:1px solid #304966}
+    .btn-green{background:#12865f;color:white}.btn-gold{background:#e5b642;color:#182337}
+    .table-panel{margin-top:22px;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#0a1728}
+    .table-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:20px 21px;border-bottom:1px solid var(--line);background:#0e1d31}
+    .table-title{font-size:14px;font-weight:900;letter-spacing:.55px;line-height:1.5}
+    .table-sub{font-size:11px;color:var(--muted);margin-top:5px}
+    .table-tools{display:flex;gap:9px;align-items:center;min-width:min(100%,320px)}
+    .table-tools input{min-width:180px}
+    .table-wrap{overflow:auto;max-height:620px}
+    table{border-collapse:collapse;width:100%;min-width:650px;text-align:left}
+    thead{position:sticky;top:0;z-index:2}
+    th{background:#243851;color:#dbe7f4;font-size:10px;text-transform:uppercase;letter-spacing:.9px;padding:14px 18px;white-space:nowrap}
+    td{padding:14px 18px;border-bottom:1px solid #1b2d43;color:#dbe5f0;font-size:12px;vertical-align:middle}
+    tbody tr:hover{background:#11243a}
+    tbody tr:last-child td{border-bottom:0}
+    td:first-child{color:#8298b3;width:58px}
+    .participant{font-weight:800;color:#fff}
+    .branch{font-weight:600;color:#d1deed}
+    .pill{display:inline-flex;align-items:center;max-width:330px;white-space:normal;line-height:1.35;padding:6px 9px;border-radius:7px;font-size:10px;font-weight:800}
+    .pill-badminton{color:#d8baff;background:#492c6c;border:1px solid #69459a}
+    .pill-tenis{color:#ffb9d7;background:#632b49;border:1px solid #984b72}
+    .pill-catur{color:#ffd0a1;background:#633d20;border:1px solid #966035}
+    .pill-paduan{color:#a7f4ce;background:#164c3c;border:1px solid #247457}
+    .pill-karaoke,.pill-koreografi{color:#ffe18c;background:#594516;border:1px solid #8b6c25}
+    .pill-lukis{color:#ffb4ad;background:#642c2a;border:1px solid #98433e}
+    .pill-video{color:#a4f4ef;background:#104c50;border:1px solid #1d7a7c}
+    .pill-other{color:#d0dceb;background:#26384c;border:1px solid #3b536c}
+    .empty{padding:42px 18px;text-align:center;color:#9cb0c8}
+    .pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 19px;border-top:1px solid var(--line);color:#92a7c0;font-size:11px}
+    .page-controls{display:flex;align-items:center;gap:8px}
+    .page-controls button{min-height:32px;padding:0 11px}
+    .notice{position:fixed;right:22px;bottom:20px;z-index:20;max-width:min(430px,calc(100vw - 32px));padding:14px 17px;border-radius:12px;background:#103b32;border:1px solid #26795f;color:#b5f6d8;box-shadow:0 12px 40px #0005;font-size:12px;font-weight:700;opacity:0;transform:translateY(12px);pointer-events:none;transition:all .25s}
+    .notice.show{opacity:1;transform:translateY(0)}
+    .notice.error{background:#451e29;border-color:#873746;color:#ffc0c8}
+    .notice.info{background:#172e4a;border-color:#315a84;color:#c5e0ff}
+    footer{margin-top:22px;padding:18px 4px 4px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;color:#758ca8;font-size:10px;line-height:1.8}
+    .footer-status{display:flex;align-items:center;gap:7px;color:#8edbb9;font-weight:800}
+    .footer-dot{width:7px;height:7px;border-radius:50%;background:#2ed092}
+    .muted{color:var(--muted)}
+    .spinner{display:inline-block;width:12px;height:12px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(min-width:1200px){.stats{grid-template-columns:repeat(5,minmax(0,1fr))}}
+    @media(min-width:1450px){.stats{grid-template-columns:repeat(5,minmax(0,1fr))}}
+    @media(max-width:900px){.shell{padding:16px}.hero{padding:23px}.stats{grid-template-columns:repeat(3,minmax(0,1fr))}.filter-grid{grid-template-columns:1fr 1fr}.filter-grid .search-field{grid-column:1/-1}.table-head{align-items:flex-start;flex-direction:column}.table-tools{width:100%}.table-tools input{flex:1}}
+    @media(max-width:580px){.shell{padding:11px}.hero{padding:20px 17px;align-items:flex-start;flex-direction:column;gap:18px}.brand{gap:12px}.brand-icon{width:50px;height:50px;flex-basis:50px;border-radius:14px;font-size:24px}h1{font-size:29px;letter-spacing:-1px}.eyebrow{font-size:9px;letter-spacing:1.5px}.subtitle{font-size:10px;letter-spacing:.8px}.hero-right{text-align:left}.sync-time{margin-top:8px}.section-label{margin-top:22px;font-size:10px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{padding:14px;min-height:100px}.stat-number{font-size:30px}.stat-top{font-size:9px}.filters{padding:16px}.filter-grid{grid-template-columns:1fr}.filter-grid .search-field{grid-column:auto}.filter-head{flex-direction:column}.actions button{flex:1}.table-head{padding:16px}.table-title{font-size:12px}.table-tools{min-width:0;flex-direction:column;align-items:stretch}.table-tools input{min-width:0}.pagination{align-items:flex-start;flex-direction:column}.notice{right:12px;bottom:12px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <!-- Ganti URL di bawah dengan link gambar logo PGRI Anda -->
+          <img src="https://www.image2url.com/r2/default/images/1792895512913-fa9f7d1f-9adb-42ab-aa3e-5ef289e586cf.png" alt="Logo PGRI" style="width: 100%; height: 100%; object-fit: contain; border-radius: 14px;">
+        </div>
+        <div>
+          <h1>PORSENIJAR <span style="color:var(--gold)">2026</span></h1>
+          <div class="subtitle">PGRI KABUPATEN SAMPANG <span style="color:var(--gold)">|</span> FULL ONLINE</div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="live-pill"><span class="live-dot"></span> LIVE SYNC GOOGLE SHEETS</div>
+        <div class="sync-time">SINKRONISASI TERAKHIR<strong id="lastSync">Belum tersinkronisasi</strong><span id="syncState">Menyiapkan koneksi…</span></div>
+      </div>
+    </header>
+
+    <div class="section-label">Ringkasan Data Peserta</div>
+    <section class="stats" id="stats" aria-live="polite"></section>
+
+    <div class="section-label">Filter Data Real-time <span style="font-weight:500;letter-spacing:0;text-transform:none;color:#7f95b0">(8 Jenis Lomba Olahraga, Seni & Pembelajaran)</span></div>
+    <section class="filters">
+      <div class="filter-head">
+        <div>
+          <h2 class="filter-title">Temukan Data Peserta</h2>
+          <div class="filter-desc">Pilih PGRI Cabang dan jenis lomba. Statistik dan daftar akan menyesuaikan dengan filter aktif.</div>
+        </div>
+        <button class="btn-secondary" id="refreshBtn" onclick="refreshData(true)">↻ Refresh Sekarang</button>
+      </div>
+      <div class="filter-grid">
+        <div>
+          <label for="branchFilter">PGRI Cabang</label>
+          <select id="branchFilter"><option value="">Semua PGRI Cabang</option></select>
+        </div>
+        <div>
+          <label for="competitionFilter">Jenis Lomba</label>
+          <select id="competitionFilter"><option value="">Semua Jenis Lomba</option></select>
+        </div>
+        <div class="search-field">
+          <label for="searchInput">Pencarian peserta / cabang / lomba</label>
+          <input id="searchInput" type="search" placeholder="Ketik nama peserta, cabang, atau jenis lomba…">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="applyFilters()">✓ Terapkan Filter</button>
+        <button class="btn-secondary" onclick="resetFilters()">Reset Semua Filter</button>
+        <button class="btn-green" onclick="exportExcel()">⇩ Ekspor ke Excel (XLSX)</button>
+      </div>
+    </section>
+
+    <section class="table-panel">
+      <div class="table-head">
+        <div>
+          <div class="table-title">DAFTAR PESERTA PORSENIJAR 2026<br>PGRI KABUPATEN SAMPANG</div>
+          <div class="table-sub" id="resultSummary">Menunggu data dari Google Sheets…</div>
+        </div>
+        <div class="table-tools">
+          <select id="pageSize" aria-label="Jumlah baris per halaman" title="Jumlah baris per halaman">
+            <option value="10">10 baris</option><option value="25" selected>25 baris</option><option value="50">50 baris</option><option value="100">100 baris</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>No.</th><th>PGRI Cabang</th><th>Jenis Lomba</th><th>Nama Peserta</th></tr></thead>
+          <tbody id="tableBody"><tr><td colspan="4" class="empty"><span class="spinner"></span>Menghubungkan ke Google Sheets…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div id="pageInfo">0 data</div>
+        <div class="page-controls">
+          <button class="btn-secondary" id="prevBtn" onclick="changePage(-1)">← Sebelumnya</button>
+          <span id="pageNumber">Halaman 0/0</span>
+          <button class="btn-secondary" id="nextBtn" onclick="changePage(1)">Berikutnya →</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div><div class="footer-status"><span class="footer-dot"></span><span id="footerStatus">MENYAMBUNG KE SUMBER DATA</span></div><div id="sourceLabel">Sumber: Google Sheets</div></div>
+      <div>Auto-refresh setiap 30 detik · <span id="footerCount">0 peserta</span><br>Badminton · Tenis Meja · Catur · Paduan Suara · Karaoke · Koreografi · Seni Lukis · Video Animasi AI</div>
+    </footer>
+  </main>
+  <div class="notice" id="notice" role="status" aria-live="polite"></div>
+
+<script>
+  const REFRESH_INTERVAL_MS = 30000;
+  const COMPETITIONS = [
+    'Badminton','Tenis Meja','Catur','Paduan Suara','Karaoke','Koreografi','Seni Lukis',
+    'Video Animasi Pembelajaran Mendalam dengan AI'
+  ];
+  const STAT_CARDS = [
+    {label:'Total Peserta', icon:'👥', key:'total'},
+    {label:'PGRI Cabang Aktif', icon:'📍', key:'branches'},
+    {label:'Badminton', icon:'🏸', key:'Badminton'},
+    {label:'Tenis Meja', icon:'🏓', key:'Tenis Meja'},
+    {label:'Catur', icon:'♟️', key:'Catur'},
+    {label:'Paduan Suara', icon:'🎶', key:'Paduan Suara'},
+    {label:'Karaoke', icon:'🎤', key:'Karaoke'},
+    {label:'Koreografi', icon:'💃', key:'Koreografi'},
+    {label:'Seni Lukis', icon:'🎨', key:'Seni Lukis'},
+    {label:'Video Animasi Pembelajaran Mendalam dengan AI', icon:'🤖', key:'Video Animasi Pembelajaran Mendalam dengan AI'}
+  ];
+  let allRows = [];
+  let filteredRows = [];
+  let currentPage = 1;
+  let lastSuccessfulSync = null;
+  let requestInFlight = false;
+  let refreshTimer = null;
+  let activeCompetitions = COMPETITIONS.slice();
+
+  const $ = id => document.getElementById(id);
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[ch]));
+  }
+
+  function normalizeSpace(value) { return String(value == null ? '' : value).replace(/\s+/g,' ').trim(); }
+  function normalizedKey(value) {
+    return normalizeSpace(value).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  }
+
+  function normalizeCompetition(value) {
+    const raw = normalizeSpace(value);
+    const key = normalizedKey(raw);
+    const rules = [
+      [['badminton','bulutangkis','bulutangkis'], 'Badminton'],
+      [['tenismeja','pingpong'], 'Tenis Meja'],
+      [['catur','chess'], 'Catur'],
+      [['paduansuara','padusuara','choir'], 'Paduan Suara'],
+      [['karaoke','menyanyi','vokal'], 'Karaoke'],
+      [['koreografi','dance','tari'], 'Koreografi'],
+      [['senilukis','melukis','lukis'], 'Seni Lukis'],
+      [['videoanimasipembelajaranmendalamdenganai','videoanimasipembelajaranmendalamai','animasipembelajaranmendalamdenganai','videopembelajaranai','videoanimasi'], 'Video Animasi Pembelajaran Mendalam dengan AI']
+    ];
+    for (const [aliases, label] of rules) if (aliases.some(a => key === a || key.includes(a))) return label;
+    if (key.includes('video') && key.includes('ai')) return 'Video Animasi Pembelajaran Mendalam dengan AI';
+    return raw || '-';
+  }
+
+  function showNotice(message, type='success', duration=5000) {
+    const node = $('notice');
+    node.textContent = message;
+    node.className = 'notice show' + (type === 'error' ? ' error' : type === 'info' ? ' info' : '');
+    clearTimeout(showNotice.timer);
+    showNotice.timer = setTimeout(() => node.classList.remove('show'), duration);
+  }
+
+  function formatDate(date) {
+    if (!date) return 'Belum tersinkronisasi';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return 'Waktu tidak tersedia';
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}`;
+  }
+
+  function normalizePayload(payload) {
+    if (!payload || typeof payload !== 'object') throw new Error('Respons server kosong atau bukan objek.');
+    if (payload.success !== true) throw new Error(payload.error || 'Server tidak mengembalikan status sukses.');
+    if (!Array.isArray(payload.rows)) throw new Error('Format data tidak valid: properti rows bukan array.');
+    return payload.rows.map((r, index) => {
+      if (!r || typeof r !== 'object') throw new Error(`Format baris ${index+1} tidak valid.`);
+      return {
+        timestamp: normalizeSpace(r.timestamp),
+        branch: normalizeSpace(r.branch) || '-',
+        competition: normalizeCompetition(r.competition),
+        participant: normalizeSpace(r.participant) || '-',
+        sourceRow: Number(r.sourceRow) || index + 2
+      };
+    }).filter(r => !(r.branch === '-' && r.competition === '-' && r.participant === '-'));
+  }
+
+  function refreshData(force) {
+    if (requestInFlight) {
+      if (force) showNotice('Sinkronisasi sedang berjalan. Tunggu hingga proses selesai.', 'info', 3000);
+      return;
+    }
+    if (!(window.google && google.script && google.script.run)) {
+      setSyncFailure('Aplikasi harus dibuka melalui URL Google Apps Script Web App, bukan file HTML lokal.');
+      return;
+    }
+    requestInFlight = true;
+    $('refreshBtn').disabled = true;
+    $('refreshBtn').innerHTML = '<span class="spinner"></span>Menyinkronkan…';
+    $('syncState').textContent = 'Mengambil data dari Google Sheets…';
+
+    const runner = google.script.run
+      .withSuccessHandler(payload => {
+        requestInFlight = false;
+        $('refreshBtn').disabled = false;
+        $('refreshBtn').textContent = '↻ Refresh Sekarang';
+        try {
+          const cleanRows = normalizePayload(payload);
+          allRows = cleanRows;
+          activeCompetitions = Array.isArray(payload.competitions) && payload.competitions.length
+            ? payload.competitions.map(normalizeCompetition) : COMPETITIONS.slice();
+          lastSuccessfulSync = new Date();
+          $('lastSync').textContent = formatDate(lastSuccessfulSync);
+          $('syncState').textContent = payload.fromCache ? 'Data diterima (cache server)' : 'Data terbaru berhasil diterima';
+          $('footerStatus').textContent = 'ONLINE · DATA TERSINKRONISASI';
+          $('sourceLabel').textContent = 'Sumber: ' + (payload.source || 'Google Sheets');
+          $('footerCount').textContent = `${allRows.length} peserta`;
+          populateFilters();
+          applyFilters();
+          showNotice(`Sync sukses: ${allRows.length} peserta berhasil dimuat${payload.fromCache ? ' (cache server)' : ''}.`, 'success');
+          if (payload.warning) showNotice(payload.warning, 'info', 7000);
+        } catch (err) {
+          setSyncFailure('Data diterima tetapi gagal divalidasi: ' + err.message);
+        }
+      })
+      .withFailureHandler(err => {
+        requestInFlight = false;
+        $('refreshBtn').disabled = false;
+        $('refreshBtn').textContent = '↻ Refresh Sekarang';
+        setSyncFailure(err && err.message ? err.message : 'Terjadi kesalahan saat menghubungi Apps Script.');
+      });
+    runner.getDashboardData(Boolean(force));
+  }
+
+  function setSyncFailure(message) {
+    $('syncState').textContent = 'Sinkronisasi gagal — data terakhir dipertahankan';
+    $('footerStatus').textContent = 'KONEKSI BERMASALAH';
+    $('footerStatus').style.color = '#ff9da6';
+    showNotice('Sync gagal: ' + message, 'error', 9000);
+    if (allRows.length) renderAll();
+    else $('tableBody').innerHTML = `<tr><td colspan="4" class="empty">Data belum dapat dimuat. Periksa konfigurasi dan koneksi Google Sheets.<br><small>${escapeHtml(message)}</small></td></tr>`;
+  }
+
+  function populateFilters() {
+    const branchSelect = $('branchFilter');
+    const competitionSelect = $('competitionFilter');
+    const oldBranch = branchSelect.value;
+    const oldCompetition = competitionSelect.value;
+    const branches = [...new Set(allRows.map(r => r.branch).filter(v => v && v !== '-'))]
+      .sort((a,b) => a.localeCompare(b,'id'));
+    branchSelect.innerHTML = '<option value="">Semua PGRI Cabang</option>' +
+      branches.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    competitionSelect.innerHTML = '<option value="">Semua Jenis Lomba</option>' +
+      activeCompetitions.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    if (branches.includes(oldBranch)) branchSelect.value = oldBranch;
+    if (activeCompetitions.includes(oldCompetition)) competitionSelect.value = oldCompetition;
+  }
+
+  function applyFilters() {
+    const branch = $('branchFilter').value;
+    const competition = $('competitionFilter').value;
+    const query = normalizedKey($('searchInput').value);
+    filteredRows = allRows.filter(r => {
+      if (branch && r.branch !== branch) return false;
+      if (competition && r.competition !== competition) return false;
+      if (query) {
+        const haystack = normalizedKey([r.branch, r.competition, r.participant].join(' '));
+        if (!haystack.includes(query)) return false;
+      }
+      return true;
+    });
+    currentPage = 1;
+    renderAll();
+  }
+
+  function resetFilters() {
+    $('branchFilter').value = '';
+    $('competitionFilter').value = '';
+    $('searchInput').value = '';
+    currentPage = 1;
+    applyFilters();
+  }
+
+  function renderAll() {
+    renderStats();
+    renderTable();
+    const uniqueCompetitions = new Set(filteredRows.map(r => r.competition).filter(c => c && c !== '-')).size;
+    $('resultSummary').textContent = `Menampilkan ${filteredRows.length} dari ${allRows.length} peserta — ${uniqueCompetitions} jenis lomba`;
+  }
+
+  function renderStats() {
+    const branches = new Set(filteredRows.map(r => r.branch).filter(b => b && b !== '-'));
+    const counts = {};
+    filteredRows.forEach(r => counts[r.competition] = (counts[r.competition] || 0) + 1);
+    $('stats').innerHTML = STAT_CARDS.map(card => {
+      const number = card.key === 'total' ? filteredRows.length :
+        card.key === 'branches' ? branches.size : (counts[card.key] || 0);
+      return `<article class="stat"><div class="stat-top"><span>${escapeHtml(card.label)}</span><span class="stat-icon">${card.icon}</span></div><div class="stat-number">${number.toLocaleString('id-ID')}</div></article>`;
+    }).join('');
+  }
+
+  function competitionClass(value) {
+    const key = normalizedKey(value);
+    if (key.includes('badminton') || key.includes('bulutangkis')) return 'pill-badminton';
+    if (key.includes('tenismeja')) return 'pill-tenis';
+    if (key.includes('catur')) return 'pill-catur';
+    if (key.includes('paduansuara')) return 'pill-paduan';
+    if (key.includes('karaoke')) return 'pill-karaoke';
+    if (key.includes('koreografi')) return 'pill-koreografi';
+    if (key.includes('senilukis')) return 'pill-lukis';
+    if (key.includes('video') || key.includes('pembelajaranmendalam')) return 'pill-video';
+    return 'pill-other';
+  }
+
+  function renderTable() {
+    const pageSize = Number($('pageSize').value) || 25;
+    const totalPages = Math.ceil(filteredRows.length / pageSize);
+    if (totalPages === 0) currentPage = 1;
+    else currentPage = Math.min(Math.max(currentPage,1),totalPages);
+    const start = (currentPage - 1) * pageSize;
+    const pageRows = filteredRows.slice(start,start + pageSize);
+    if (!pageRows.length) {
+      $('tableBody').innerHTML = '<tr><td colspan="4" class="empty">Tidak ada peserta yang cocok dengan filter atau pencarian.</td></tr>';
+    } else {
+      $('tableBody').innerHTML = pageRows.map((r,i) => `<tr>
+        <td>${start+i+1}</td>
+        <td class="branch">${escapeHtml(r.branch || '-')}</td>
+        <td><span class="pill ${competitionClass(r.competition)}">${escapeHtml(r.competition || '-')}</span></td>
+        <td class="participant">${escapeHtml(r.participant || '-')}</td>
+      </tr>`).join('');
+    }
+    $('pageInfo').textContent = filteredRows.length
+      ? `Menampilkan ${start+1}–${Math.min(start+pageSize,filteredRows.length)} dari ${filteredRows.length} data`
+      : '0 data';
+    $('pageNumber').textContent = `Halaman ${totalPages ? currentPage : 0}/${totalPages}`;
+    $('prevBtn').disabled = currentPage <= 1 || totalPages === 0;
+    $('nextBtn').disabled = currentPage >= totalPages || totalPages === 0;
+  }
+
+  function changePage(delta) {
+    currentPage += delta;
+    renderTable();
+  }
+
+  function exportExcel() {
+    if (!filteredRows.length) {
+      showNotice('Tidak ada data untuk diekspor. Ubah filter atau kata pencarian.', 'error');
+      return;
+    }
+    if (!window.XLSX) {
+      showNotice('Library XLSX belum termuat. Periksa koneksi internet lalu coba lagi.', 'error', 7000);
+      return;
+    }
+    const exportRows = filteredRows.map((r,i) => ({
+      'No': i+1,
+      'PGRI Cabang': r.branch || '-',
+      'Jenis Lomba': r.competition || '-',
+      'Nama Peserta': r.participant || '-'
+    }));
+    const wb = XLSX.utils.book_new();
+    const wsData = XLSX.utils.json_to_sheet(exportRows);
+    wsData['!cols'] = [
+      {wch:8},{wch:26},{wch:46},{wch:38}
+    ];
+    wsData['!autofilter'] = { ref: `A1:D${exportRows.length+1}` };
+    XLSX.utils.book_append_sheet(wb, wsData, 'Data Peserta');
+
+    const branchCounts = {};
+    const competitionCounts = {};
+    filteredRows.forEach(r => {
+      branchCounts[r.branch] = (branchCounts[r.branch] || 0) + 1;
+      competitionCounts[r.competition] = (competitionCounts[r.competition] || 0) + 1;
+    });
+    const statsRows = [
+      {Kategori:'RINGKASAN', 'Nama':'Total Peserta', Jumlah:filteredRows.length},
+      {Kategori:'PGRI Cabang', Nama:'', Jumlah:''},
+      ...Object.keys(branchCounts).sort((a,b)=>a.localeCompare(b,'id')).map(name=>({Kategori:'PGRI Cabang',Nama:name,Jumlah:branchCounts[name]})),
+      {Kategori:'Jenis Lomba', Nama:'', Jumlah:''},
+      ...Object.keys(competitionCounts).sort((a,b)=>a.localeCompare(b,'id')).map(name=>({Kategori:'Jenis Lomba',Nama:name,Jumlah:competitionCounts[name]}))
+    ];
+    const wsStats = XLSX.utils.json_to_sheet(statsRows);
+    wsStats['!cols'] = [{wch:22},{wch:48},{wch:14}];
+    wsStats['!autofilter'] = {ref:`A1:C${statsRows.length+1}`};
+    XLSX.utils.book_append_sheet(wb, wsStats, 'Statistik');
+
+    const date = new Date();
+    const stamp = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
+    XLSX.writeFile(wb, `PORSENIJAR_2026_PGRI_Kabupaten_Sampang_${stamp}.xlsx`);
+    showNotice(`Ekspor XLSX berhasil: ${exportRows.length} peserta.`, 'success');
+  }
+
+  $('branchFilter').addEventListener('change', applyFilters);
+  $('competitionFilter').addEventListener('change', applyFilters);
+  $('searchInput').addEventListener('input', applyFilters);
+  $('pageSize').addEventListener('change', () => {currentPage=1;renderTable();});
+
+  // Initial fetch and 30-second auto-refresh. Browser interval is started once.
+  refreshData(false);
+  refreshTimer = window.setInterval(() => refreshData(false), REFRESH_INTERVAL_MS);
+  window.addEventListener('beforeunload', () => {
+    if (refreshTimer) window.clearInterval(refreshTimer);
+  });
+</script>
+</body>
+</html>
