@@ -38,8 +38,39 @@ const CONFIG = {
   ]
 };
 
-function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
+
+function doGet(e) {
+  const params = (e && e.parameter) ? e.parameter : {};
+
+  // Endpoint data untuk frontend GitHub Pages.
+  if (params.action === 'data') {
+    const callback = String(params.callback || '');
+
+    // Hanya menerima nama fungsi callback sederhana.
+    // Callback dibuat oleh index.html, bukan diambil dari input pengguna.
+    if (!/^[A-Za-z_$][0-9A-Za-z_$]*$/.test(callback)) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          success: false,
+          error: 'Parameter callback tidak valid.'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const payload = getDashboardData(
+      params.force === '1'
+    );
+
+    return ContentService
+      .createTextOutput(
+        callback + '(' + JSON.stringify(payload) + ');'
+      )
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  // Tetap mempertahankan halaman HTML jika /exec dibuka langsung.
+  return HtmlService
+    .createHtmlOutputFromFile('index')
     .setTitle('PORSENIJAR 2026 | PGRI Kabupaten Sampang')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
