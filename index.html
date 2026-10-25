@@ -187,6 +187,8 @@
 
 <script>
   const REFRESH_INTERVAL_MS = 30000;
+  const APPS_SCRIPT_URL =
+  'https://script.google.com/macros/s/AKfycbyW8v23iMRx9tfK9WHmm5flUOvR05ocf8KlTgss5GMJZOF2LDboM4jYen9-creppCvUng/exec';
   const COMPETITIONS = [
     'Badminton','Tenis Meja','Catur','Paduan Suara','Karaoke','Koreografi','Seni Lukis',
     'Video Animasi Pembelajaran Mendalam dengan AI'
@@ -274,52 +276,151 @@
     }).filter(r => !(r.branch === '-' && r.competition === '-' && r.participant === '-'));
   }
 
-  function refreshData(force) {
-    if (requestInFlight) {
-      if (force) showNotice('Sinkronisasi sedang berjalan. Tunggu hingga proses selesai.', 'info', 3000);
-      return;
-    }
-    if (!(window.google && google.script && google.script.run)) {
-      setSyncFailure('Aplikasi harus dibuka melalui URL Google Apps Script Web App, bukan file HTML lokal.');
-      return;
-    }
-    requestInFlight = true;
-    $('refreshBtn').disabled = true;
-    $('refreshBtn').innerHTML = '<span class="spinner"></span>Menyinkronkan…';
-    $('syncState').textContent = 'Mengambil data dari Google Sheets…';
+  
+function fetchPorsenijarData(forceRefresh) {
+  return new Promise((resolve, reject) => {
+    const callbackName =
+      '__porsenijar_' +
+      Date.now() +
+      '_' +
+      Math.random().toString(36).slice(2);
 
-    const runner = google.script.run
-      .withSuccessHandler(payload => {
-        requestInFlight = false;
-        $('refreshBtn').disabled = false;
-        $('refreshBtn').textContent = '↻ Refresh Sekarang';
-        try {
-          const cleanRows = normalizePayload(payload);
-          allRows = cleanRows;
-          activeCompetitions = Array.isArray(payload.competitions) && payload.competitions.length
-            ? payload.competitions.map(normalizeCompetition) : COMPETITIONS.slice();
-          lastSuccessfulSync = new Date();
-          $('lastSync').textContent = formatDate(lastSuccessfulSync);
-          $('syncState').textContent = payload.fromCache ? 'Data diterima (cache server)' : 'Data terbaru berhasil diterima';
-          $('footerStatus').textContent = 'ONLINE · DATA TERSINKRONISASI';
-          $('sourceLabel').textContent = 'Sumber: ' + (payload.source || 'Google Sheets');
-          $('footerCount').textContent = `${allRows.length} peserta`;
-          populateFilters();
-          applyFilters();
-          showNotice(`Sync sukses: ${allRows.length} peserta berhasil dimuat${payload.fromCache ? ' (cache server)' : ''}.`, 'success');
-          if (payload.warning) showNotice(payload.warning, 'info', 7000);
-        } catch (err) {
-          setSyncFailure('Data diterima tetapi gagal divalidasi: ' + err.message);
-        }
-      })
-      .withFailureHandler(err => {
-        requestInFlight = false;
-        $('refreshBtn').disabled = false;
-        $('refreshBtn').textContent = '↻ Refresh Sekarang';
-        setSyncFailure(err && err.message ? err.message : 'Terjadi kesalahan saat menghubungi Apps Script.');
-      });
-    runner.getDashboardData(Boolean(force));
+    const script = document.createElement('script');
+    let finished = false;
+
+    const timeoutId = window.setTimeout(() => {
+      finish(new Error(
+        'Waktu koneksi ke Apps Script habis. Coba refresh kembali.'
+      ));
+    }, 20000);
+
+    function finish(error, data) {
+      if (finished) return;
+
+      finished = true;
+      window.clearTimeout(timeoutId);
+      delete window[callbackName];
+      script.remove();
+
+      if (error) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    }
+
+    window[callbackName] = function(payload) {
+      if (!payload || typeof payload !== 'object') {
+        finish(new Error('Respons Apps Script tidak valid.'));
+        return;
+      }
+
+      if (payload.success !== true) {
+        finish(new Error(
+          payload.error || 'Apps Script gagal membaca data.'
+        ));
+        return;
+      }
+
+      finish(null, payload);
+    };
+
+    script.onerror = function() {
+      finish(new Error(
+        'Endpoint Apps Script tidak dapat diakses. ' +
+        'Periksa URL dan izin deployment.'
+      ));
+    };
+
+    const separator = APPS_SCRIPT_URL.includes('?') ? '&' : '?';
+    const forceParam = forceRefresh ? '&force=1' : '';
+
+    script.src =
+      APPS_SCRIPT_URL +
+      separator +
+      'action=data' +
+      '&callback=' + encodeURIComponent(callbackName) +
+      forceParam +
+      '&_=' + Date.now();
+
+    document.head.appendChild(script);
+  });
+}
+
+function refreshData(force) {
+  if (requestInFlight) {
+    if (force) {
+      showNotice(
+        'Sinkronisasi sedang berjalan. Tunggu hingga selesai.',
+        'info',
+        3000
+      );
+    }
+    return;
   }
+
+  requestInFlight = true;
+  $('refreshBtn').disabled = true;
+  $('refreshBtn').innerHTML =
+    '<span class="spinner"></span>Menyinkronkan…';
+  $('syncState').textContent = 'Mengambil data dari Google Sheets…';
+
+  fetchPorsenijarData(Boolean(force))
+    .then(payload => {
+      // Validasi terlebih dahulu sebelum mengganti data terakhir.
+      const cleanRows = normalizePayload(payload);
+
+      allRows = cleanRows;
+
+      activeCompetitions =
+        Array.isArray(payload.competitions) &&
+        payload.competitions.length
+          ? payload.competitions.map(normalizeCompetition)
+          : COMPETITIONS.slice();
+
+      lastSuccessfulSync = new Date();
+
+      $('lastSync').textContent = formatDate(lastSuccessfulSync);
+      $('syncState').textContent = payload.fromCache
+        ? 'Data diterima (cache server)'
+        : 'Data terbaru berhasil diterima';
+
+      $('footerStatus').textContent =
+        'ONLINE · DATA TERSINKRONISASI';
+      $('footerStatus').style.color = '#8edbb9';
+
+      $('sourceLabel').textContent =
+        'Sumber: ' + (payload.source || 'Google Sheets');
+
+      $('footerCount').textContent = `${allRows.length} peserta`;
+
+      populateFilters();
+      applyFilters();
+
+      showNotice(
+        `Sync sukses: ${allRows.length} peserta berhasil dimuat` +
+        `${payload.fromCache ? ' (cache server)' : ''}.`,
+        'success'
+      );
+
+      if (payload.warning) {
+        showNotice(payload.warning, 'info', 7000);
+      }
+    })
+    .catch(error => {
+      // Data sebelumnya tetap dipertahankan jika sinkronisasi gagal.
+      setSyncFailure(
+        error && error.message
+          ? error.message
+          : 'Terjadi kesalahan saat menghubungi Apps Script.'
+      );
+    })
+    .finally(() => {
+      requestInFlight = false;
+      $('refreshBtn').disabled = false;
+      $('refreshBtn').textContent = '↻ Refresh Sekarang';
+    });
+}
 
   function setSyncFailure(message) {
     $('syncState').textContent = 'Sinkronisasi gagal — data terakhir dipertahankan';
